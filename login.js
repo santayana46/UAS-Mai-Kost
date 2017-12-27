@@ -1,3 +1,4 @@
+
 import React, { Component } from 'react';
 import {
   AppRegistry,
@@ -8,7 +9,9 @@ import {
   TakeInput,
   Image,
   Dimensions,
-  TextInput
+  TextInput,
+  AsyncStorage,
+  Modal
 } from 'react-native';
 var{width,height}=Dimensions.get('window');
 import { StackNavigator } from 'react-navigation';
@@ -39,9 +42,28 @@ export default class login extends Component {
 async login(email,password){
   try {
     const {navigate} = this.props.navigation;
-    await app.auth().signInWithEmailAndPassword(email,password);
-    alert("login sukses");
-    navigate('dashboard');
+    await app.auth().signInWithEmailAndPassword(email,password).then(()=>{
+      var userId = firebase.auth().currentUser.uid;
+      var database = firebase.database().ref("users").child(userId);
+      database.on("value",(snapshot)=>{
+       //alert(JSON.stringify(snapshot));
+        AsyncStorage.multiSet([
+          ["email", email],
+          ["password", password],
+          ["username", snapshot.val().username],
+          ["nama", snapshot.val().nama],
+          ["gender", snapshot.val().gender],
+          ["userId", userId]
+        ]);
+      });
+      
+      const {navigate} = this.props.navigation;
+      navigate('Dashboard');
+      alert("Login berhasil");
+      
+     
+    });
+    
   } catch (error) {
       alert(error);
   }
@@ -56,7 +78,7 @@ async login(email,password){
       /* background login*/
       <Image source = {require('./blur1.png')} style={styles.container} >
 
-      <Image source = {require('./kost.png')} style ={{height : 105, width : 105, marginBottom :62}} ></Image> 
+      <Image source = {require('./kost.png')} style ={{height : 105, width : 145, marginBottom :62}} ></Image> 
        
        <TextInput
           underlineColorAndroid="transparent"

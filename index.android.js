@@ -16,19 +16,25 @@ import {
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
+import Dashboard from './dashboard';
 import login from './login';
 import signup from './signup';
 import SplashScreen from './SplashScreen';
-import Dashboard from './dashboard';
 import * as firebase from 'firebase';
+import properti from './properti';
+import profil from './profil';
+import update from './update';
+console.disableYellowBox = true ;
 
 const pbmNavigation = StackNavigator({
   
-  
+  Dashboard : {screen : Dashboard},
   login : {screen : login},
   signup : {screen : signup},
   SplashScreen : {screen : SplashScreen},
-  dashboard : {screen : Dashboard}
+  properti : {screen : properti},
+  profil : {screen : profil},
+  update : {screen : update}
   
 }); 
 

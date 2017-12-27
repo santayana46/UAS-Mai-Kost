@@ -12,6 +12,7 @@ import {
   View,
   TouchableOpacity,
   TakeInput,
+  AsyncStorage,
   Image,
   Dimensions,
   TextInput,
@@ -19,7 +20,9 @@ import {
   BackHandler
 } from 'react-native';
 var{width,height}=Dimensions.get('window');
+
 import { StackNavigator } from 'react-navigation';
+import * as firebase from 'firebase';
 
 export default class signup extends Component {
   static navigationOptions = {
@@ -35,9 +38,67 @@ export default class signup extends Component {
     email     : '',
     ttl       : '',
     kelamin   : '',
-    gender    : 'Male '
+    gender    : 'Male'
   };
 }
+
+signUp=()=>{
+  if ( this.state.email == '' || this.state.password == '' ||  this.state.username == '' ||  this.state.nama == '' ||  this.state.ttl == '' ) {
+    alert("Pastikan seuma data sudah terisi");
+}
+  else{ 
+    firebase.auth().createUserWithEmailAndPassword(this.state.email,this.state.password).then(() => {
+        var userId = firebase.auth().currentUser.uid;
+
+        // AsyncStorage.multiSet([
+        //     ["email", this.state.email],
+        //     ["password", this.state.password],
+        //     ["userId", userId]
+        // ]);
+
+        this.writeToDatabase(userId);
+        
+        
+        }).catch((error) => {
+          alert("error " + error.message );
+        });
+  }
+ 
+}
+
+writeToDatabase = (userId) => {
+  var database = firebase.database().ref("users").child(userId);
+  database.set({
+    userId : userId,
+    email : this.state.email,
+    username :this.state.username,
+    nama : this.state.nama,
+    ttl : this.state.ttl,
+    gender : this.state.gender
+  }).then((snapshot)=>{
+
+     firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password).then(() => {
+     
+        // AsyncStorage.multiSet([
+        //   ["email", this.state.email],
+        //   ["password", this.state.password],
+        //   ["userId", userId],
+        //   ["username", this.state.username]
+        // ]);
+
+      /** Set AsyncStorage START **/
+      const { navigate } = this.props.navigation;
+      navigate('Dashboard');
+      alert("Login berhasil");
+      }).catch((error) => {
+          alert("error " + error.message );
+         
+      });
+
+  });
+
+}
+
   render() {
     const {navigate} = this.props.navigation;
     return (
@@ -45,16 +106,14 @@ export default class signup extends Component {
       <View style={styles.container}>
        
       <View style={{width : width, height : 26, position : 'absolute', top : 10}}>
-        <Text  
-           style = {{color: "#004d4d", marginTop: 5,  marginBottom: 9, fontSize : 25}}> 
-           SIGN UP
-        </Text>
+          <Text  
+            style = {{color: "#004d4d", marginTop: 5,  marginBottom: 9, fontSize : 25}}> 
+            SIGN UP
+          </Text>
 
-        <View style={{width : width, height: 3, backgroundColor : '#004d4d'}}>
-        </View>
-
+          <View style={{width : width, height: 3, backgroundColor : '#004d4d'}}> </View>
       </View>
-      <Image source = {require('./kost.png')} style ={{height : 105, width : 105, marginBottom :70, marginBottom: 7 }} ></Image> 
+      <Image source = {require('./kost.png')} style ={{height : 100, width : 145, marginBottom :40, marginBottom: 3 }} ></Image> 
        
       <TextInput
           underlineColorAndroid="transparent"
@@ -98,22 +157,22 @@ export default class signup extends Component {
 
 
         <View style={{flexDirection : 'row', marginLeft : 10}}>
-        <Text style={{color : 'gray', fontSize : 15, marginTop : 20}}>Gender : </Text>
-        <View style={{width : width/1.8, borderWidth: 1, borderColor: 'gray', marginTop: 8, height: 40, borderRadius: 8}}>
-        <Picker
-          mode = {'dropdown'}
-          selectedValue={this.state.gender}
-          onValueChange={(itemValue) => this.setState({gender: itemValue})}
-          style={{color : 'gray', borderWidth: 1, borderColor: 'gray', backgroundColor: "rgba(74, 140, 246, 0.2)" }}     
-          >
-          <Picker.Item label = "Male" value="Male"/>
-          <Picker.Item label = "Female" value="Female"/>
-        </Picker>
+          <Text style={{color : 'gray', fontSize : 15, marginTop : 20}}>Gender : </Text>
+            <View style={{width : width/1.8, borderWidth: 1, borderColor: 'gray', marginTop: 8, height: 40, borderRadius: 8}}>
+              <Picker
+                mode = {'dropdown'}
+                selectedValue={this.state.gender}
+                onValueChange={(itemValue) => this.setState({gender: itemValue})}
+                style={{color : 'gray', borderWidth: 1, borderColor: 'gray', backgroundColor: "rgba(74, 140, 246, 0.2)" }}     
+                >
+                <Picker.Item label = "Male" value="Male"/>
+                <Picker.Item label = "Female" value="Female"/>
+              </Picker>
 
-        </View>
+            </View>
         </View>
 
-        <TouchableOpacity onPress={()=>navigate('dashboard')}>
+        <TouchableOpacity onPress={()=>this.signUp()} style={{marginTop : 20}}>
           <View style={{height:40, width:300, backgroundColor:"#193C75", marginTop:15, borderRadius:7}}>
             <Text style={{color:"white", textAlign:"center", marginTop:8}}>SIGN UP</Text>
           </View>
